@@ -1,88 +1,79 @@
-# ESP8266 Low-Power Sensor Data Logger  
-(Pressure & Temperature)
+# ESP8266 Low-Power Sensor Data Logger
 
-This project is a low-power IoT data logger based on the ESP8266.  
-The device periodically measures pressure and temperature sensor data and sends the values to a central server for storage and analysis.  
-Between measurements, the ESP8266 enters Deep Sleep mode to minimize power consumption, allowing the device to operate on a battery for approximately six months.
+### Infrared temperature sensing · Wireless telemetry · Timed deep sleep
 
----
+An embedded prototype that reads ambient and object temperatures from an MLX90614 infrared sensor, transmits them to a Flask server, and stores the readings in CSV. The project connects sensor interfacing, MCU firmware, networking, and a small data-logging backend.
 
-## Project Goals
+**Stack:** C++ / Arduino · ESP8266 · I²C · HTTP / JSON · Python / Flask
 
-- Measure pressure and temperature using external sensors
-- Periodically transmit sensor data to a single server
-- Minimize power consumption using ESP8266 Deep Sleep mode
-- Achieve long-term battery operation (target: ~6 months)
-- Provide a simple and scalable architecture for sensor data logging
+[Sensor firmware](2nd%20day_Temp%20device%20with%20IR/IRdevice_uploaded_on_esp8266.ino) · [Logging server](2nd%20day_Temp%20device%20with%20IR/server.py) · [Sample log](2nd%20day_Temp%20device%20with%20IR/data_log.csv)
 
----
+## System architecture
 
-## System Overview
+```mermaid
+flowchart LR
+  A[MLX90614 infrared sensor] -->|I2C| B[ESP8266 firmware]
+  B -->|Wi-Fi / HTTP POST| C[Flask server]
+  C --> D[CSV data log]
+  B --> E[60-second deep sleep]
+  E --> B
+```
 
-The system operates in a cyclic manner to maximize energy efficiency:
+## What the published code implements
 
-1. ESP8266 wakes up from Deep Sleep
-2. Pressure and temperature sensors are initialized
-3. Sensor values are measured
-4. Wi-Fi connection is established
-5. Sensor data is sent to the server
-6. The device enters Deep Sleep mode until the next measurement cycle
+- I²C sensor initialization and ambient / object temperature acquisition.
+- Static-IP Wi-Fi setup with a 10-second connection timeout.
+- JSON telemetry sent to `POST /api/sensor`.
+- A local web page available during a five-second debugging window.
+- 60-second deep sleep, including sensor-initialization and Wi-Fi failure paths.
+- Server-side UTC / KST timestamps, CSV logging, and `GET /api/latest`.
 
-Most of the power consumption occurs during the boot, sensor reading, and Wi-Fi transmission phases.  
-Deep Sleep drastically reduces power usage during idle periods.
+## Hardware connections
 
----
+| Connection | ESP8266 pin |
+| :--- | :--- |
+| Sensor SDA | D2 |
+| Sensor SCL | D1 |
+| Timed wake-up | GPIO16 / D0 connected to RST |
 
-## Hardware
+Use a sensor module and power supply compatible with the board’s voltage levels, with a shared ground.
 
-### Microcontroller
-- ESP8266 (e.g., Wemos D1 mini or ESP8266-based module)
+## Source map
 
-### Sensors
-- Pressure sensor (model to be defined)
-- Temperature sensor (model to be defined)
+| File | Purpose |
+| :--- | :--- |
+| [Wi-Fi LED example](1st%20day_Using%20MCU/blink_using_wifi.ino) | Initial Wi-Fi / GPIO experiment |
+| [Sensor firmware](2nd%20day_Temp%20device%20with%20IR/IRdevice_uploaded_on_esp8266.ino) | Sensor acquisition, HTTP transmission, web debugging, sleep |
+| [server.py](2nd%20day_Temp%20device%20with%20IR/server.py) | Flask ingestion API and CSV storage |
+| [data_log.csv](2nd%20day_Temp%20device%20with%20IR/data_log.csv) | Sample output |
 
-Depending on the selected sensors, communication may use I2C, SPI, or analog interfaces.  
-Pressure sensors may require signal conditioning or external ADCs.
+## Run the prototype
 
-### Power Supply
-- Battery powered (AA/AAA batteries or Li-ion battery)
-- Low-dropout or ultra-low-power voltage regulator recommended
-- Target operational lifetime: approximately 6 months
+1. Install the ESP8266 board package in Arduino IDE and the Adafruit MLX90614 library with its dependencies.
+2. Connect the sensor and the GPIO16-to-RST wake-up wire.
+3. Configure the firmware’s Wi-Fi settings, static-IP configuration, and `SERVER_HOST` / `SERVER_PORT` for your network.
+4. Start the Python server from the sensor-project directory:
 
----
+```bash
+cd "2nd day_Temp device with IR"
+python3 -m pip install flask
+python3 server.py
+```
 
-## Firmware Design
+5. Upload the sensor sketch. Check `data_log.csv` or visit `http://<server-ip>:8080/api/latest`. The optional device web page is available only during its brief awake window.
 
-### Sampling Strategy
-- The ESP8266 wakes up at a fixed interval defined by `SAMPLE_INTERVAL`
-- Sensor data is collected and transmitted immediately
-- After transmission, the device enters Deep Sleep
+Example telemetry:
 
-### Deep Sleep Mode
-- `ESP.deepSleep()` is used to minimize power consumption
-- For timed wake-up, `GPIO16 (D0)` must be connected to the `RST` pin
-
-### Error Handling
-- If Wi-Fi connection or data transmission fails, the device may:
-  - Retry a limited number of times
-  - Enter Deep Sleep to conserve power
-
----
-
-## Communication
-
-Sensor data is transmitted to a central server using one of the following methods:
-- HTTP (REST API)
-- MQTT (message-based communication)
-
-The choice of protocol depends on server architecture and scalability requirements.
-
-Example data payload:
 ```json
-{
-  "temperature": 23.4,
-  "pressure": 101.2,
-  "timestamp": 1700000000
-}
+{"ambient_c": 23.4, "object_c": 30.2}
+```
 
+## Current scope and next steps
+
+The published implementation measures infrared temperature and uses HTTP. Pressure sensing and MQTT are future extensions. Battery runtime has not been established by a published current measurement or long-duration test; the earlier six-month estimate is a design target.
+
+The HTTP client currently sends data and consumes the response without checking its status code. Useful next steps are response validation, retry / buffering logic, and measured sleep / active current profiles.
+
+## Author
+
+[Jinwon Doo](https://github.com/DooJinWon) · Electrical Engineering
