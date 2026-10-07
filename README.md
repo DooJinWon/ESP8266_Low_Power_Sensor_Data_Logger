@@ -6,7 +6,7 @@ An embedded prototype that reads ambient and object temperatures from an MLX9061
 
 **Stack:** C++ / Arduino · ESP8266 · I²C · HTTP / JSON · Python / Flask
 
-[Sensor firmware](2nd%20day_Temp%20device%20with%20IR/IRdevice_uploaded_on_esp8266.ino) · [Logging server](2nd%20day_Temp%20device%20with%20IR/server.py) · [Sample log](2nd%20day_Temp%20device%20with%20IR/data_log.csv)
+[Sensor firmware](day-02-ir-temperature-logger/IRdevice_uploaded_on_esp8266.ino) · [Logging server](day-02-ir-temperature-logger/server.py) · [Sample log](day-02-ir-temperature-logger/data_log.csv)
 
 ## System architecture
 
@@ -42,10 +42,10 @@ Use a sensor module and power supply compatible with the board’s voltage level
 
 | File | Purpose |
 | :--- | :--- |
-| [Wi-Fi LED example](1st%20day_Using%20MCU/blink_using_wifi.ino) | Initial Wi-Fi / GPIO experiment |
-| [Sensor firmware](2nd%20day_Temp%20device%20with%20IR/IRdevice_uploaded_on_esp8266.ino) | Sensor acquisition, HTTP transmission, web debugging, sleep |
-| [server.py](2nd%20day_Temp%20device%20with%20IR/server.py) | Flask ingestion API and CSV storage |
-| [data_log.csv](2nd%20day_Temp%20device%20with%20IR/data_log.csv) | Sample output |
+| [Wi-Fi LED example](day-01-mcu-basics/blink_using_wifi.ino) | Initial Wi-Fi / GPIO experiment |
+| [Sensor firmware](day-02-ir-temperature-logger/IRdevice_uploaded_on_esp8266.ino) | Sensor acquisition, HTTP transmission, web debugging, sleep |
+| [server.py](day-02-ir-temperature-logger/server.py) | Flask ingestion API and CSV storage |
+| [data_log.csv](day-02-ir-temperature-logger/data_log.csv) | Sample output |
 
 ## Run the prototype
 
@@ -55,7 +55,7 @@ Use a sensor module and power supply compatible with the board’s voltage level
 4. Start the Python server from the sensor-project directory:
 
 ```bash
-cd "2nd day_Temp device with IR"
+cd day-02-ir-temperature-logger
 python3 -m pip install flask
 python3 server.py
 ```

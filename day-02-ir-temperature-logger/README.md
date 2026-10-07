@@ -1,4 +1,6 @@
-## Repository Structure and Code Description
+# Day 02 — IR Temperature Logger
+
+[← Back to project overview](../README.md)
 
 This repository contains firmware and server-side scripts for building a low-power
 temperature logging device using an ESP8266 and an infrared (IR) temperature sensor.

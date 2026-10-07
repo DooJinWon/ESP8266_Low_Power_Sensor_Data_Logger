@@ -1,4 +1,6 @@
-## Development Log
+# Day 01 — ESP8266 MCU & Wi-Fi Basics
+
+[← Back to project overview](../README.md)
 
 ### Initial ESP8266 Experience and Basic Project
 
